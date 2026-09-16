@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RTM Cloud Reports</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF5900;
+    --orange-dark: #B34700;
+    --burgundy: #411517;
+    --cream: #F4EDE3;
+    --white: #FFFFFF;
+    --lime: #CFFF00;
+    --darkgray: #343B46;
+    --medgray: #595959;
+    --lavender: #EBE8FC;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: var(--cream);
+    color: var(--burgundy);
+    min-height: 100vh;
+  }
+  .accent-bar {
+    height: 8px;
+    background: var(--orange);
+    width: 100%;
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 28px;
+    background: var(--burgundy);
+  }
+  .topbar .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .topbar .brand .logo-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--orange);
+    transform: rotate(4.7deg);
+  }
+  .topbar h1 {
+    color: var(--cream);
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 0.3px;
+  }
+  .topbar h1 span { color: var(--lime); }
+  #logoutBtn {
+    background: transparent;
+    border: 1px solid var(--cream);
+    color: var(--cream);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  #logoutBtn:hover { background: rgba(244,237,227,0.1); }
+
+  /* ── Login screen ─────────────────────────────────────────── */
+  #loginScreen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 90vh;
+    padding: 20px;
+  }
+  .login-card {
+    background: var(--white);
+    border-radius: 18px;
+    padding: 40px 36px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 12px 40px rgba(65,21,23,0.12);
+    text-align: center;
+  }
+  .login-card .badge {
+    width: 56px; height: 56px;
+    background: var(--orange);
+    border-radius: 50%;
+    margin: 0 auto 18px;
+    display: flex; align-items: center; justify-content: center;
+    transform: rotate(-4deg);
+  }
+  .login-card .badge span { color: var(--cream); font-weight: 800; font-size: 22px; }
+  .login-card h2 { color: var(--orange); font-size: 22px; font-weight: 700; margin: 0 0 6px; }
+  .login-card p { color: var(--medgray); font-size: 13px; margin: 0 0 22px; line-height: 1.5; }
+  .login-card input[type="password"], .login-card input[type="text"] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #e5dcd0;
+    border-radius: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    margin-bottom: 14px;
+    background: var(--cream);
+    color: var(--burgundy);
+  }
+  .login-card input:focus { outline: none; border-color: var(--orange); }
+  .login-card .btn-primary {
+    width: 100%;
+    padding: 13px;
+    background: var(--orange);
+    color: var(--white);
+    border: none;
+    border-radius: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .login-card .btn-primary:hover { background: var(--orange-dark); }
+  .login-card .hint {
+    margin-top: 16px;
+    font-size: 11px;
+    color: var(--medgray);
+    text-align: left;
+    background: var(--cream);
+    padding: 12px;
+    border-radius: 10px;
+    line-height: 1.6;
+  }
+  .login-card .hint a { color: var(--orange); text-decoration: none; font-weight: 600; }
+  .login-card .error { color: #b3261e; font-size: 12px; margin-top: 8px; display: none; }
+
+  /* ── Dashboard ─────────────────────────────────────────────── */
+  #dashboard { display: none; padding: 28px; max-width: 900px; margin: 0 auto; }
+  .panel {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 18px rgba(65,21,23,0.06);
+  }
+  .panel h3 {
+    color: var(--orange);
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0 0 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--cream);
+  }
+  .field-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  .field { flex: 1; min-width: 180px; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--darkgray);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  select, input[type="date"], input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #e5dcd0;
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    background: var(--cream);
+    color: var(--burgundy);
+  }
+  select:focus, input:focus { outline: none; border-color: var(--orange); }
+  .channels { display: flex; gap: 18px; }
+  .channels label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 500; color: var(--burgundy);
+    text-transform: none;
+    cursor: pointer;
+  }
+  .channels input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--orange); }
+  .vendor-fields { display: none; }
+  .vendor-fields.show { display: flex; }
+  #runBtn {
+    width: 100%;
+    padding: 15px;
+    background: var(--orange);
+    color: var(--white);
+    border: none;
+    border-radius: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+  }
+  #runBtn:hover { background: var(--orange-dark); }
+  #runBtn:disabled { background: #ccb8a8; cursor: not-allowed; }
+  #statusMsg {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: none;
+  }
+  #statusMsg.ok { display: block; background: #e6f4ea; color: #1e7d46; }
+  #statusMsg.err { display: block; background: #fce8e6; color: #b3261e; }
+
+  .runs-list { display: flex; flex-direction: column; gap: 8px; }
+  .run-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--cream);
+    border-radius: 8px;
+    font-size: 12px;
+  }
+  .run-row .run-title { font-weight: 600; color: var(--burgundy); }
+  .run-row .run-meta { color: var(--medgray); font-size: 11px; }
+  .status-pill {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .status-pill.success { background: #e6f4ea; color: #1e7d46; }
+  .status-pill.failure { background: #fce8e6; color: #b3261e; }
+  .status-pill.in_progress, .status-pill.queued { background: #fef7e0; color: #8a6d00; }
+  .runs-list a { color: var(--orange); text-decoration: none; font-weight: 600; }
+  #refreshRunsBtn {
+    background: transparent; border: 1.5px solid var(--orange); color: var(--orange);
+    padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    cursor: pointer; font-family: 'Poppins', sans-serif;
+  }
+  .runs-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 2px solid var(--cream); }
+  .runs-header h3 { margin: 0; border: none; padding: 0; }
+</style>
+</head>
+<body>
+
+<div class="accent-bar"></div>
+<div class="topbar">
+  <div class="brand">
+    <div class="logo-dot"></div>
+    <h1>RTM <span>Cloud</span> Reports</h1>
+  </div>
+  <button id="logoutBtn" onclick="logout()" style="display:none;">Log out</button>
+</div>
+
+<!-- ═══ LOGIN SCREEN ═══ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="badge"><span>RTM</span></div>
+    <h2>Sign in</h2>
+    <p>Enter your GitHub token to trigger and monitor RTM Cloud Reports.</p>
+    <input type="password" id="patInput" placeholder="GitHub Personal Access Token" autocomplete="off">
+    <button class="btn-primary" onclick="login()">Sign in & Remember</button>
+    <div class="error" id="loginError">Could not verify this token. Check it and try again.</div>
+    <div class="hint">
+      Don't have a token? Go to GitHub → Settings → Developer settings →
+      Personal access tokens → Fine-grained token → scope it to just the
+      <b>rtm-cloud-reports</b> repo with <b>Actions: Read and write</b> permission.
+      <br><br>
+      Your token is saved only in this browser (never sent anywhere except
+      GitHub's own API) — you won't need to log in again on this device.
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DASHBOARD ═══ -->
+<div id="dashboard">
+
+  <div class="panel">
+    <h3>Run a Report</h3>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Report</label>
+        <select id="reportSelect" onchange="onReportChange()">
+          <option value="all_pbi">All PBI LOBs</option>
+          <option value="cs_chat">CS Chat</option>
+          <option value="rs">RS</option>
+          <option value="ps_chat">PS Chat</option>
+          <option value="ghc">GHC</option>
+          <option value="osu">OSU</option>
+          <option value="ros">ROS</option>
+          <option value="cs_voice">CS Voice</option>
+          <option value="ps_voice">PS Voice</option>
+          <option value="rs_voice">RS Voice</option>
+          <option value="vendor_kpi">Vendor KPI</option>
+          <option value="vendor_perf">Vendor Performance</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Date (blank = yesterday)</label>
+        <input type="date" id="dateInput">
+      </div>
+    </div>
+
+    <div class="field-row vendor-fields" id="vendorFields">
+      <div class="field">
+        <label>Vendor Dept</label>
+        <select id="vendorDept">
+          <option value="CS">CS</option>
+          <option value="RS">RS</option>
+          <option value="PS_CHAT">PS Chat</option>
+          <option value="PS_VOICE">PS Voice</option>
+          <option value="CS_VOICE">CS Voice</option>
+          <option value="OSU">OSU</option>
+          <option value="GHC">GHC</option>
+        </select>
+      </div>
+      <div class="field" id="vendorSiteField">
+        <label>Site (Vendor Perf only, blank = All)</label>
+        <input type="text" id="vendorSite" placeholder="e.g. BSEG">
+      </div>
+      <div class="field" id="vendorVendorField">
+        <label>Vendor (Vendor KPI only, blank = All)</label>
+        <input type="text" id="vendorVendor" placeholder="e.g. BSEG">
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Send Via</label>
+        <div class="channels">
+          <label><input type="checkbox" id="chanEmail" checked> Email</label>
+          <label><input type="checkbox" id="chanSlack" checked> Slack</label>
+        </div>
+      </div>
+    </div>
+
+    <button id="runBtn" onclick="runReport()">▶ Run Report</button>
+    <div id="statusMsg"></div>
+  </div>
+
+  <div class="panel">
+    <div class="runs-header">
+      <h3>Recent Runs</h3>
+      <button id="refreshRunsBtn" onclick="loadRuns()">⟳ Refresh</button>
+    </div>
+    <div class="runs-list" id="runsList">
+      <div class="run-row"><span class="run-meta">Loading…</span></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const OWNER = "mohamedfouda-afk";
+  const REPO  = "rtm-cloud-reports";
+  const WORKFLOW_FILE = "rtm-cloud-reports.yml";
+  const TOKEN_KEY = "rtm_gh_pat";
+
+  function getToken() { return localStorage.getItem(TOKEN_KEY) || ""; }
+
+  function ghHeaders() {
+    return {
+      "Authorization": "Bearer " + getToken(),
+      "Accept": "application/vnd.github+json",
+      "Content-Type": "application/json",
+    };
+  }
+
+  async function login() {
+    const pat = document.getElementById("patInput").value.trim();
+    const errEl = document.getElementById("loginError");
+    errEl.style.display = "none";
+    if (!pat) return;
+    try {
+      const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}`, {
+        headers: { "Authorization": "Bearer " + pat, "Accept": "application/vnd.github+json" }
+      });
+      if (!res.ok) throw new Error("bad token");
+      localStorage.setItem(TOKEN_KEY, pat);
+      showDashboard();
+    } catch (e) {
+      errEl.style.display = "block";
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem(TOKEN_KEY);
+    document.getElementById("dashboard").style.display = "none";
+    document.getElementById("loginScreen").style.display = "flex";
+    document.getElementById("logoutBtn").style.display = "none";
+  }
+
+  function showDashboard() {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+    document.getElementById("logoutBtn").style.display = "inline-block";
+    onReportChange();
+    loadRuns();
+  }
+
+  function onReportChange() {
+    const report = document.getElementById("reportSelect").value;
+    const vendorFields = document.getElementById("vendorFields");
+    const siteField = document.getElementById("vendorSiteField");
+    const vendorField = document.getElementById("vendorVendorField");
+    if (report === "vendor_kpi" || report === "vendor_perf") {
+      vendorFields.classList.add("show");
+      siteField.style.display = (report === "vendor_perf") ? "block" : "none";
+      vendorField.style.display = (report === "vendor_kpi") ? "block" : "none";
+    } else {
+      vendorFields.classList.remove("show");
+    }
+  }
+
+  function showStatus(msg, isOk) {
+    const el = document.getElementById("statusMsg");
+    el.textContent = msg;
+    el.className = isOk ? "ok" : "err";
+  }
+
+  async function runReport() {
+    const btn = document.getElementById("runBtn");
+    const report = document.getElementById("reportSelect").value;
+    const date = document.getElementById("dateInput").value;
+    const chanEmail = document.getElementById("chanEmail").checked;
+    const chanSlack = document.getElementById("chanSlack").checked;
+    const vendorDept = document.getElementById("vendorDept").value;
+    const vendorSite = document.getElementById("vendorSite").value.trim();
+    const vendorVendor = document.getElementById("vendorVendor").value.trim();
+
+    if (!chanEmail && !chanSlack) {
+      showStatus("Pick at least one channel (Email or Slack).", false);
+      return;
+    }
+    let channels = "email,slack";
+    if (chanEmail && !chanSlack) channels = "email";
+    if (!chanEmail && chanSlack) channels = "slack";
+
+    btn.disabled = true;
+    btn.textContent = "Running…";
+
+    try {
+      const res = await fetch(
+        `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW_FILE}/dispatches`,
+        {
+          method: "POST",
+          headers: ghHeaders(),
+          body: JSON.stringify({
+            ref: "main",
+            inputs: {
+              report: report,
+              channels: channels,
+              date: date,
+              vendor_dept: vendorDept,
+              vendor_site: vendorSite,
+              vendor_vendor: vendorVendor,
+            },
+          }),
+        }
+      );
+      if (res.status === 204) {
+        showStatus("Triggered! Check Recent Runs below in a few seconds.", true);
+        setTimeout(loadRuns, 4000);
+      } else {
+        const body = await res.text();
+        showStatus("Failed to trigger: " + res.status + " " + body.slice(0, 200), false);
+      }
+    } catch (e) {
+      showStatus("Network error: " + e.message, false);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "▶ Run Report";
+    }
+  }
+
+  function timeAgo(iso) {
+    const diffMs = Date.now() - new Date(iso).getTime();
+    const mins = Math.round(diffMs / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return mins + "m ago";
+    const hrs = Math.round(mins / 60);
+    if (hrs < 24) return hrs + "h ago";
+    return Math.round(hrs / 24) + "d ago";
+  }
+
+  async function loadRuns() {
+    const listEl = document.getElementById("runsList");
+    try {
+      const res = await fetch(
+        `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW_FILE}/runs?per_page=8`,
+        { headers: ghHeaders() }
+      );
+      if (!res.ok) {
+        listEl.innerHTML = `<div class="run-row"><span class="run-meta">Could not load runs (${res.status})</span></div>`;
+        return;
+      }
+      const data = await res.json();
+      const runs = data.workflow_runs || [];
+      if (!runs.length) {
+        listEl.innerHTML = `<div class="run-row"><span class="run-meta">No runs yet</span></div>`;
+        return;
+      }
+      listEl.innerHTML = runs.map(r => {
+        const status = r.status === "completed" ? (r.conclusion || "unknown") : r.status;
+        return `<div class="run-row">
+          <div>
+            <div class="run-title">#${r.run_number} — ${r.display_title || r.name}</div>
+            <div class="run-meta">${timeAgo(r.created_at)} · <a href="${r.html_url}" target="_blank">View log</a></div>
+          </div>
+          <span class="status-pill ${status}">${status}</span>
+        </div>`;
+      }).join("");
+    } catch (e) {
+      listEl.innerHTML = `<div class="run-row"><span class="run-meta">Error: ${e.message}</span></div>`;
+    }
+  }
+
+  // ── Init ──────────────────────────────────────────────────────
+  if (getToken()) {
+    showDashboard();
+  }
+</script>
+
+</body>
+</html>
