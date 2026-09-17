@@ -440,6 +440,15 @@
           <label>Time (UTC hour)</label>
           <select id="schedHour"></select>
         </div>
+        <div class="field">
+          <label>Repeat every (optional)</label>
+          <select id="schedRepeat">
+            <option value="0">Once a day (default)</option>
+            <option value="1">Every 1 hour</option>
+            <option value="2">Every 2 hours</option>
+            <option value="3">Every 3 hours</option>
+          </select>
+        </div>
         <div class="field" id="schedScopeField">
           <label>Period</label>
           <select id="schedScope" onchange="onSchedScopeChange()">
@@ -665,7 +674,7 @@
         <div class="sched-row">
           <div>
             <div class="sched-main">${s.name || schedSummary(s)}</div>
-            <div class="sched-meta">${schedSummary(s)} · ${String(s.hourUTC).padStart(2, "0")}:00 UTC · ${s.channels} ${s.emailTo ? "· to: " + s.emailTo : ""}</div>
+            <div class="sched-meta">${schedSummary(s)} · ${String(s.hourUTC).padStart(2, "0")}:00 UTC${s.repeatHours ? ` (every ${s.repeatHours}h)` : ""} · ${s.channels} ${s.emailTo ? "· to: " + s.emailTo : ""}</div>
           </div>
           <div class="sched-actions">
             <input type="checkbox" class="sched-toggle" ${s.enabled !== false ? "checked" : ""}
@@ -684,6 +693,7 @@
     const statusEl = document.getElementById("schedStatusMsg");
     const report = document.getElementById("schedReport").value;
     const hourUTC = parseInt(document.getElementById("schedHour").value, 10);
+    const repeatHours = parseInt(document.getElementById("schedRepeat").value, 10) || 0;
     const chanEmail = document.getElementById("schedChanEmail").checked;
     const chanSlack = document.getElementById("schedChanSlack").checked;
     const vendorDept = document.getElementById("schedVendorDept").value;
@@ -709,7 +719,7 @@
       schedules.push({
         name: null,
         enabled: true,
-        hourUTC, report, channels,
+        hourUTC, repeatHours, report, channels,
         date: "",
         scope,
         vendorDept, vendorSite, vendorVendor,
