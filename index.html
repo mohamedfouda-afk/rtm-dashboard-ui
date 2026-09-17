@@ -237,6 +237,35 @@
   }
   .runs-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 2px solid var(--cream); }
   .runs-header h3 { margin: 0; border: none; padding: 0; }
+
+  .sched-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .sched-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px;
+    background: var(--cream);
+    border-radius: 8px;
+    font-size: 12px;
+    gap: 10px;
+  }
+  .sched-row .sched-main { font-weight: 600; color: var(--burgundy); font-size: 13px; }
+  .sched-row .sched-meta { color: var(--medgray); font-size: 11px; margin-top: 2px; }
+  .sched-row .sched-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .sched-toggle { width: 16px; height: 16px; accent-color: var(--orange); cursor: pointer; }
+  .sched-delete {
+    background: transparent; border: 1.5px solid #b3261e; color: #b3261e;
+    padding: 4px 10px; border-radius: 14px; font-size: 11px; font-weight: 600;
+    cursor: pointer; font-family: 'Poppins', sans-serif;
+  }
+  .sched-add-form { padding-top: 12px; border-top: 2px solid var(--cream); }
+  #schedAddBtn {
+    width: 100%; padding: 12px; background: var(--burgundy); color: var(--cream);
+    border: none; border-radius: 10px; font-family: 'Poppins', sans-serif;
+    font-weight: 700; font-size: 13px; cursor: pointer;
+  }
+  #schedAddBtn:hover { opacity: 0.9; }
+  #schedStatusMsg { margin-top: 10px; font-size: 12px; }
+  #schedStatusMsg.ok { color: #1e7d46; }
+  #schedStatusMsg.err { color: #b3261e; }
 </style>
 </head>
 <body>
@@ -315,11 +344,33 @@
       </div>
       <div class="field" id="vendorSiteField">
         <label>Site (Vendor Perf only, blank = All)</label>
-        <input type="text" id="vendorSite" placeholder="e.g. BSEG">
+        <select id="vendorSite">
+          <option value="">All Sites</option>
+          <option value="BSEG">BSEG</option>
+          <option value="EXIQ">EXIQ</option>
+          <option value="EXJO">EXJO</option>
+          <option value="HPIQ">HPIQ</option>
+          <option value="MBPK">MBPK</option>
+          <option value="SUEG">SUEG</option>
+          <option value="TPEG">TPEG</option>
+          <option value="TREG">TREG</option>
+          <option value="FWBH">FWBH</option>
+        </select>
       </div>
       <div class="field" id="vendorVendorField">
         <label>Vendor (Vendor KPI only, blank = All)</label>
-        <input type="text" id="vendorVendor" placeholder="e.g. BSEG">
+        <select id="vendorVendor">
+          <option value="">All Vendors</option>
+          <option value="BSEG">BSEG</option>
+          <option value="EXIQ">EXIQ</option>
+          <option value="EXJO">EXJO</option>
+          <option value="HPIQ">HPIQ</option>
+          <option value="MBPK">MBPK</option>
+          <option value="SUEG">SUEG</option>
+          <option value="TPEG">TPEG</option>
+          <option value="TREG">TREG</option>
+          <option value="FWBH">FWBH</option>
+        </select>
       </div>
     </div>
 
@@ -330,6 +381,10 @@
           <label><input type="checkbox" id="chanEmail" checked> Email</label>
           <label><input type="checkbox" id="chanSlack" checked> Slack</label>
         </div>
+      </div>
+      <div class="field">
+        <label>Send To (blank = default distro list)</label>
+        <input type="text" id="emailTo" placeholder="e.g. name1@talabat.com, name2@talabat.com">
       </div>
     </div>
 
@@ -344,6 +399,102 @@
     </div>
     <div class="runs-list" id="runsList">
       <div class="run-row"><span class="run-meta">Loading…</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Scheduled Sends</h3>
+
+    <div class="sched-list" id="schedList">
+      <div class="run-row"><span class="run-meta">Loading…</span></div>
+    </div>
+
+    <div class="sched-add-form">
+      <div class="field-row">
+        <div class="field">
+          <label>Report</label>
+          <select id="schedReport" onchange="onSchedReportChange()">
+            <option value="all_pbi">All PBI LOBs</option>
+            <option value="cs_chat">CS Chat</option>
+            <option value="rs">RS</option>
+            <option value="ps_chat">PS Chat</option>
+            <option value="ghc">GHC</option>
+            <option value="osu">OSU</option>
+            <option value="ros">ROS</option>
+            <option value="cs_voice">CS Voice</option>
+            <option value="ps_voice">PS Voice</option>
+            <option value="rs_voice">RS Voice</option>
+            <option value="vendor_kpi">Vendor KPI</option>
+            <option value="vendor_perf">Vendor Performance</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Time (UTC hour)</label>
+          <select id="schedHour"></select>
+        </div>
+      </div>
+
+      <div class="field-row sched-vendor-fields" id="schedVendorFields">
+        <div class="field">
+          <label>Vendor Dept</label>
+          <select id="schedVendorDept">
+            <option value="CS">CS</option>
+            <option value="RS">RS</option>
+            <option value="PS_CHAT">PS Chat</option>
+            <option value="PS_VOICE">PS Voice</option>
+            <option value="CS_VOICE">CS Voice</option>
+            <option value="OSU">OSU</option>
+            <option value="GHC">GHC</option>
+          </select>
+        </div>
+        <div class="field" id="schedVendorSiteField">
+          <label>Site</label>
+          <select id="schedVendorSite">
+            <option value="">All Sites</option>
+            <option value="BSEG">BSEG</option>
+            <option value="EXIQ">EXIQ</option>
+            <option value="EXJO">EXJO</option>
+            <option value="HPIQ">HPIQ</option>
+            <option value="MBPK">MBPK</option>
+            <option value="SUEG">SUEG</option>
+            <option value="TPEG">TPEG</option>
+            <option value="TREG">TREG</option>
+            <option value="FWBH">FWBH</option>
+          </select>
+        </div>
+        <div class="field" id="schedVendorVendorField">
+          <label>Vendor</label>
+          <select id="schedVendorVendor">
+            <option value="">All Vendors</option>
+            <option value="BSEG">BSEG</option>
+            <option value="EXIQ">EXIQ</option>
+            <option value="EXJO">EXJO</option>
+            <option value="HPIQ">HPIQ</option>
+            <option value="MBPK">MBPK</option>
+            <option value="SUEG">SUEG</option>
+            <option value="TPEG">TPEG</option>
+            <option value="TREG">TREG</option>
+            <option value="FWBH">FWBH</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Send Via</label>
+          <div class="channels">
+            <label><input type="checkbox" id="schedChanEmail" checked> Email</label>
+            <label><input type="checkbox" id="schedChanSlack" checked> Slack</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Send To (blank = default distro list)</label>
+          <input type="text" id="schedEmailTo" placeholder="e.g. name1@talabat.com">
+        </div>
+      </div>
+
+      <button id="schedAddBtn" onclick="addSchedule()">+ Add Schedule</button>
+      <div id="schedStatusMsg"></div>
     </div>
   </div>
 
@@ -395,6 +546,175 @@
     document.getElementById("logoutBtn").style.display = "inline-block";
     onReportChange();
     loadRuns();
+    initSchedHourOptions();
+    onSchedReportChange();
+    loadSchedules();
+  }
+
+  function initSchedHourOptions() {
+    const sel = document.getElementById("schedHour");
+    sel.innerHTML = "";
+    for (let h = 0; h < 24; h++) {
+      const opt = document.createElement("option");
+      opt.value = h;
+      opt.textContent = String(h).padStart(2, "0") + ":00 UTC";
+      sel.appendChild(opt);
+    }
+  }
+
+  function onSchedReportChange() {
+    const report = document.getElementById("schedReport").value;
+    const vendorFields = document.getElementById("schedVendorFields");
+    const siteField = document.getElementById("schedVendorSiteField");
+    const vendorField = document.getElementById("schedVendorVendorField");
+    if (report === "vendor_kpi" || report === "vendor_perf") {
+      vendorFields.classList.add("show");
+      siteField.style.display = (report === "vendor_perf") ? "block" : "none";
+      vendorField.style.display = (report === "vendor_kpi") ? "block" : "none";
+    } else {
+      vendorFields.classList.remove("show");
+    }
+  }
+
+  const SCHEDULES_PATH = "schedules.json";
+
+  async function fetchSchedulesFile() {
+    // Returns { schedules: [...], sha: string|null }
+    const res = await fetch(
+      `https://api.github.com/repos/${OWNER}/${REPO}/contents/${SCHEDULES_PATH}?ref=main`,
+      { headers: ghHeaders() }
+    );
+    if (res.status === 404) return { schedules: [], sha: null };
+    if (!res.ok) throw new Error(`GitHub returned ${res.status}`);
+    const data = await res.json();
+    const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ""))));
+    let schedules = [];
+    try { schedules = JSON.parse(decoded); } catch (e) { schedules = []; }
+    return { schedules, sha: data.sha };
+  }
+
+  async function writeSchedulesFile(schedules, sha) {
+    const content = JSON.stringify(schedules, null, 2);
+    const base64 = btoa(unescape(encodeURIComponent(content)));
+    const body = {
+      message: "Update schedules.json via dashboard",
+      content: base64,
+      branch: "main",
+    };
+    if (sha) body.sha = sha;
+    const res = await fetch(
+      `https://api.github.com/repos/${OWNER}/${REPO}/contents/${SCHEDULES_PATH}`,
+      { method: "PUT", headers: ghHeaders(), body: JSON.stringify(body) }
+    );
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Save failed: ${res.status} ${errText.slice(0, 200)}`);
+    }
+  }
+
+  function schedSummary(s) {
+    const parts = [s.report];
+    if (s.report === "vendor_kpi" || s.report === "vendor_perf") {
+      parts.push(s.vendorDept || "CS");
+      if (s.report === "vendor_perf" && s.vendorSite) parts.push(s.vendorSite);
+      if (s.report === "vendor_kpi" && s.vendorVendor) parts.push(s.vendorVendor);
+    }
+    return parts.join(" · ");
+  }
+
+  async function loadSchedules() {
+    const listEl = document.getElementById("schedList");
+    try {
+      const { schedules } = await fetchSchedulesFile();
+      if (!schedules.length) {
+        listEl.innerHTML = `<div class="sched-row"><span class="run-meta">No schedules yet — add one below.</span></div>`;
+        return;
+      }
+      listEl.innerHTML = schedules.map((s, i) => `
+        <div class="sched-row">
+          <div>
+            <div class="sched-main">${s.name || schedSummary(s)}</div>
+            <div class="sched-meta">${schedSummary(s)} · ${String(s.hourUTC).padStart(2, "0")}:00 UTC · ${s.channels} ${s.emailTo ? "· to: " + s.emailTo : ""}</div>
+          </div>
+          <div class="sched-actions">
+            <input type="checkbox" class="sched-toggle" ${s.enabled !== false ? "checked" : ""}
+                   title="Enabled" onchange="toggleSchedule(${i}, this.checked)">
+            <button class="sched-delete" onclick="deleteSchedule(${i})">Delete</button>
+          </div>
+        </div>
+      `).join("");
+    } catch (e) {
+      listEl.innerHTML = `<div class="sched-row"><span class="run-meta">Error loading schedules: ${e.message}</span></div>`;
+    }
+  }
+
+  async function addSchedule() {
+    const btn = document.getElementById("schedAddBtn");
+    const statusEl = document.getElementById("schedStatusMsg");
+    const report = document.getElementById("schedReport").value;
+    const hourUTC = parseInt(document.getElementById("schedHour").value, 10);
+    const chanEmail = document.getElementById("schedChanEmail").checked;
+    const chanSlack = document.getElementById("schedChanSlack").checked;
+    const vendorDept = document.getElementById("schedVendorDept").value;
+    const vendorSite = document.getElementById("schedVendorSite").value;
+    const vendorVendor = document.getElementById("schedVendorVendor").value;
+    const emailTo = document.getElementById("schedEmailTo").value.trim();
+
+    if (!chanEmail && !chanSlack) {
+      statusEl.textContent = "Pick at least one channel.";
+      statusEl.className = "err";
+      return;
+    }
+    let channels = "email,slack";
+    if (chanEmail && !chanSlack) channels = "email";
+    if (!chanEmail && chanSlack) channels = "slack";
+
+    btn.disabled = true;
+    btn.textContent = "Saving…";
+    try {
+      const { schedules, sha } = await fetchSchedulesFile();
+      schedules.push({
+        name: null,
+        enabled: true,
+        hourUTC, report, channels,
+        date: "",
+        vendorDept, vendorSite, vendorVendor,
+        emailTo,
+      });
+      await writeSchedulesFile(schedules, sha);
+      statusEl.textContent = "Schedule added.";
+      statusEl.className = "ok";
+      loadSchedules();
+    } catch (e) {
+      statusEl.textContent = "Error: " + e.message;
+      statusEl.className = "err";
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "+ Add Schedule";
+    }
+  }
+
+  async function toggleSchedule(index, enabled) {
+    try {
+      const { schedules, sha } = await fetchSchedulesFile();
+      if (schedules[index]) schedules[index].enabled = enabled;
+      await writeSchedulesFile(schedules, sha);
+    } catch (e) {
+      alert("Failed to update: " + e.message);
+      loadSchedules();
+    }
+  }
+
+  async function deleteSchedule(index) {
+    if (!confirm("Delete this schedule?")) return;
+    try {
+      const { schedules, sha } = await fetchSchedulesFile();
+      schedules.splice(index, 1);
+      await writeSchedulesFile(schedules, sha);
+      loadSchedules();
+    } catch (e) {
+      alert("Failed to delete: " + e.message);
+    }
   }
 
   function onReportChange() {
@@ -426,6 +746,7 @@
     const vendorDept = document.getElementById("vendorDept").value;
     const vendorSite = document.getElementById("vendorSite").value.trim();
     const vendorVendor = document.getElementById("vendorVendor").value.trim();
+    const emailTo = document.getElementById("emailTo").value.trim();
 
     if (!chanEmail && !chanSlack) {
       showStatus("Pick at least one channel (Email or Slack).", false);
@@ -453,6 +774,7 @@
               vendor_dept: vendorDept,
               vendor_site: vendorSite,
               vendor_vendor: vendorVendor,
+              email_to: emailTo,
             },
           }),
         }
