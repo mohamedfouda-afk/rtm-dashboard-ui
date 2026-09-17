@@ -327,6 +327,13 @@
         <label>Date (blank = yesterday)</label>
         <input type="date" id="dateInput">
       </div>
+      <div class="field" id="scopeField">
+        <label>Period</label>
+        <select id="scopeSelect" onchange="onScopeChange()">
+          <option value="yesterday">Yesterday (single day)</option>
+          <option value="mtd">Month to Date (MTD)</option>
+        </select>
+      </div>
     </div>
 
     <div class="field-row vendor-fields" id="vendorFields">
@@ -431,6 +438,13 @@
         <div class="field">
           <label>Time (UTC hour)</label>
           <select id="schedHour"></select>
+        </div>
+        <div class="field" id="schedScopeField">
+          <label>Period</label>
+          <select id="schedScope" onchange="onSchedScopeChange()">
+            <option value="yesterday">Yesterday (single day)</option>
+            <option value="mtd">Month to Date (MTD)</option>
+          </select>
         </div>
       </div>
 
@@ -567,13 +581,26 @@
     const vendorFields = document.getElementById("schedVendorFields");
     const siteField = document.getElementById("schedVendorSiteField");
     const vendorField = document.getElementById("schedVendorVendorField");
-    if (report === "vendor_kpi" || report === "vendor_perf") {
+    const isVendor = (report === "vendor_kpi" || report === "vendor_perf");
+    if (isVendor) {
       vendorFields.classList.add("show");
       siteField.style.display = (report === "vendor_perf") ? "block" : "none";
       vendorField.style.display = (report === "vendor_kpi") ? "block" : "none";
     } else {
       vendorFields.classList.remove("show");
     }
+    // MTD only applies to PBI LOB reports, not Vendor KPI/Perf.
+    const scopeField = document.getElementById("schedScopeField");
+    if (isVendor) {
+      scopeField.style.display = "none";
+      document.getElementById("schedScope").value = "yesterday";
+    } else {
+      scopeField.style.display = "block";
+    }
+  }
+
+  function onSchedScopeChange() {
+    // Placeholder hook -- nothing else to toggle in the schedule form for now.
   }
 
   const SCHEDULES_PATH = "schedules.json";
@@ -618,6 +645,8 @@
       parts.push(s.vendorDept || "CS");
       if (s.report === "vendor_perf" && s.vendorSite) parts.push(s.vendorSite);
       if (s.report === "vendor_kpi" && s.vendorVendor) parts.push(s.vendorVendor);
+    } else if (s.scope === "mtd") {
+      parts.push("MTD");
     }
     return parts.join(" · ");
   }
@@ -659,6 +688,8 @@
     const vendorSite = document.getElementById("schedVendorSite").value;
     const vendorVendor = document.getElementById("schedVendorVendor").value;
     const emailTo = document.getElementById("schedEmailTo").value.trim();
+    const isVendor = (report === "vendor_kpi" || report === "vendor_perf");
+    const scope = isVendor ? "yesterday" : document.getElementById("schedScope").value;
 
     if (!chanEmail && !chanSlack) {
       statusEl.textContent = "Pick at least one channel.";
@@ -678,6 +709,7 @@
         enabled: true,
         hourUTC, report, channels,
         date: "",
+        scope,
         vendorDept, vendorSite, vendorVendor,
         emailTo,
       });
@@ -722,12 +754,36 @@
     const vendorFields = document.getElementById("vendorFields");
     const siteField = document.getElementById("vendorSiteField");
     const vendorField = document.getElementById("vendorVendorField");
-    if (report === "vendor_kpi" || report === "vendor_perf") {
+    const isVendor = (report === "vendor_kpi" || report === "vendor_perf");
+    if (isVendor) {
       vendorFields.classList.add("show");
       siteField.style.display = (report === "vendor_perf") ? "block" : "none";
       vendorField.style.display = (report === "vendor_kpi") ? "block" : "none";
     } else {
       vendorFields.classList.remove("show");
+    }
+    // MTD only applies to PBI LOB reports, not Vendor KPI/Perf (those stay single-date).
+    const scopeField = document.getElementById("scopeField");
+    if (isVendor) {
+      scopeField.style.display = "none";
+      document.getElementById("scopeSelect").value = "yesterday";
+      document.getElementById("dateInput").disabled = false;
+    } else {
+      scopeField.style.display = "block";
+    }
+    onScopeChange();
+  }
+
+  function onScopeChange() {
+    const scope = document.getElementById("scopeSelect").value;
+    const dateInput = document.getElementById("dateInput");
+    const isVendor = ["vendor_kpi", "vendor_perf"].includes(document.getElementById("reportSelect").value);
+    if (!isVendor && scope === "mtd") {
+      dateInput.value = "";
+      dateInput.disabled = true;
+      dateInput.placeholder = "N/A for MTD";
+    } else {
+      dateInput.disabled = false;
     }
   }
 
@@ -741,6 +797,8 @@
     const btn = document.getElementById("runBtn");
     const report = document.getElementById("reportSelect").value;
     const date = document.getElementById("dateInput").value;
+    const isVendor = (report === "vendor_kpi" || report === "vendor_perf");
+    const scope = isVendor ? "yesterday" : document.getElementById("scopeSelect").value;
     const chanEmail = document.getElementById("chanEmail").checked;
     const chanSlack = document.getElementById("chanSlack").checked;
     const vendorDept = document.getElementById("vendorDept").value;
@@ -771,6 +829,7 @@
               report: report,
               channels: channels,
               date: date,
+              scope: scope,
               vendor_dept: vendorDept,
               vendor_site: vendorSite,
               vendor_vendor: vendorVendor,
